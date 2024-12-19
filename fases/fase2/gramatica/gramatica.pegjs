@@ -7,44 +7,14 @@
     import { ErrorReglas } from './error.js';
     import { errores } from '../index.js';
 
+    import * as n from '../visitor/CST.js'
 
-    // Función para generar el módulo Fortran automáticamente
-function generarModuloFortran() {
-    // Crear el contenido del módulo
-    let moduloFortran = `module parser\n`;
-    moduloFortran += `  implicit none\n`;
-    moduloFortran += `contains\n`;
-    moduloFortran += `  function nextsym() result(token_name)\n`;
-    moduloFortran += `    implicit none\n`;
-    moduloFortran += `    character(len=*) :: token_name\n`;
-    moduloFortran += `    ! Implementación del tokenizador aquí\n`;
-    moduloFortran += `  end function nextsym\n`;
-    moduloFortran += `end module parser\n`;
 
-    // Guardar o servir el archivo generado
-    guardarModulo(moduloFortran);
-}
-
-// Guardar o servir el módulo generado
-function guardarModulo(moduloFortran) {
-    const blob = new Blob([moduloFortran], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'parser.f90';
-    link.click();
-    URL.revokeObjectURL(url);
-}
-
-// Evento para el botón de descarga
-function descargarModuloFortran() {
-    generarModuloFortran();
-}
 
 
 }}
 
-gramatica = _ producciones+ _ {
+gramatica = _ prods:producciones+ _ {
 
     let duplicados = ids.filter((item, index) => ids.indexOf(item) !== index);
     if (duplicados.length > 0) {
@@ -56,6 +26,8 @@ gramatica = _ producciones+ _ {
     if (noEncontrados.length > 0) {
         errores.push(new ErrorReglas("Regla no encontrada: " + noEncontrados[0]));
     }
+
+    return prods;
 }
 
 producciones = _ id:identificador _ alias:(literales)? _ "=" _ expr:opciones (_";")? { 
@@ -67,16 +39,22 @@ opciones = expr:union rest:(_ "/" _ @union)*{
     return new n.Opciones([expr, ...rest]); // Crea un arreglo con las expresiones
 }
 
-union = expresion (_ expresion !(_ literales? _ "=") )*
+union = expr:expresion rest:(_ @expresion !(_ literales? _ "=") )* {
+    return new n.Union([expr, ...rest]);
+}
 
-expresion  = (etiqueta/varios)? _ expresiones _ ([?+*]/conteo)?
+expresion  = label:$(etiqueta/varios)? _ expr:expresiones _ qty:$([?+*]/conteo)?{
+    return new n.Expresion(expr, label, qty);
+}
 
 etiqueta = ("@")? _ id:identificador _ ":" (varios)?
 
 varios = ("!"/"$"/"@"/"&")
 
 expresiones  =  id:identificador { usos.push(id) }
-                / literales "i"?
+                / valor:$literales isCase:"i"?{
+                    return new n.String(valor, isCase); // El isCase se usa para validar si es case insensitive
+                }
                 / "(" _ opciones _ ")"
                 / corchetes "i"?
                 / "."
@@ -112,8 +90,8 @@ corchete
 texto
     = [^\[\]]+
 
-literales = '"' stringDobleComilla* '"'
-            / "'" stringSimpleComilla* "'"
+literales = '"' @stringDobleComilla* '"'
+            / "'" @stringSimpleComilla* "'"
 
 stringDobleComilla = !('"' / "\\" / finLinea) .
                     / "\\" escape

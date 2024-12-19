@@ -1,7 +1,6 @@
 import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/+esm';
 import { parse } from './parser/gramatica.js';
-import descargarModuloFortran from './parser/gramatica.js';
-import { ErrorReglas } from './parser/error.js';
+import Tokenizer from './visitor/Tokenizer.js';
 
 
 export let ids = []
@@ -35,10 +34,26 @@ let decorations = [];
 // Obtener el botón y deshabilitarlo inicialmente
 const boton = document.getElementById('DescargarModulo');
 boton.disabled = true; // Deshabilitar el botón por defecto
+// Guardar el texto generado
+let contenidoArchivo = ""
+
 // Activar OncLick
 boton.addEventListener('click', function () {
-    descargarModuloFortran()
+    guardarModulo(contenidoArchivo);
 })
+
+// Guardar o servir el módulo generado
+function guardarModulo(moduloFortran) {
+    const blob = new Blob([moduloFortran], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'tokenizer.f90';
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+
 
 // Analizar contenido del editor
 const analizar = () => {
@@ -60,17 +75,22 @@ const analizar = () => {
             boton.disabled = false;
         }
 
-        // salida.setValue("Análisis Exitoso");
         // Limpiar decoraciones previas si la validación es exitosa
         decorations = editor.deltaDecorations(decorations, []);
-    } catch (e) {
 
+        const tokenizer = new Tokenizer();
+        contenidoArchivo = tokenizer.generateTokenizer(cst); // Con el tokenizador genera una gramatica basada en el arbol
+    
+
+    } catch (e) {
+        contenidoArchivo = ""
         if(e.location === undefined){
             
             salida.setValue(
                 `Error: ${e.message}`
             );
             boton.disabled = true;
+            
 
         }else {
 
