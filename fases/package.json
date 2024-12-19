@@ -1,0 +1,17 @@
+{
+  "name": "fase2_g2",
+  "version": "1.0.0",
+  "description": "Parser generator for Fortran using PEG and a recursive descent parser.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "peggy --format es -o src/parser/gramatica.js grammar/gramatica.pegjs",
+    "bootstrap": "node fase2/tools/Generator.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "peggy": "^4.2.0"
+  }
+}
