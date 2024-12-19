@@ -58,9 +58,14 @@ gramatica = _ producciones+ _ {
     }
 }
 
-producciones = _ id:identificador _ (literales)? _ "=" _ opciones (_";")? { ids.push(id) }
+producciones = _ id:identificador _ alias:(literales)? _ "=" _ expr:opciones (_";")? { 
+    ids.push(id)
+    return new n.Producciones(id, expr, alias);
+}
 
-opciones = union (_ "/" _ union)*
+opciones = expr:union rest:(_ "/" _ @union)*{
+    return new n.Opciones([expr, ...rest]); // Crea un arreglo con las expresiones
+}
 
 union = expresion (_ expresion !(_ literales? _ "=") )*
 
@@ -75,7 +80,7 @@ expresiones  =  id:identificador { usos.push(id) }
                 / "(" _ opciones _ ")"
                 / corchetes "i"?
                 / "."
-                / "!."
+                / "!." 
 
 conteo = "|" _ (numero / id:identificador) _ "|"
         / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "|"
