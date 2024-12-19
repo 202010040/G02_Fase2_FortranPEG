@@ -1,5 +1,6 @@
 import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/+esm';
 import { parse } from './parser/gramatica.js';
+import descargarModuloFortran from './parser/gramatica.js';
 import { ErrorReglas } from './parser/error.js';
 
 
@@ -30,6 +31,15 @@ const salida = monaco.editor.create(
 
 let decorations = [];
 
+// Código de boton para descargas
+// Obtener el botón y deshabilitarlo inicialmente
+const boton = document.getElementById('DescargarModulo');
+boton.disabled = true; // Deshabilitar el botón por defecto
+// Activar OncLick
+boton.addEventListener('click', function () {
+    descargarModuloFortran()
+})
+
 // Analizar contenido del editor
 const analizar = () => {
     const entrada = editor.getValue();
@@ -43,9 +53,11 @@ const analizar = () => {
             salida.setValue(
                 `Error: ${errores[0].message}`
             );
+            boton.disabled = true;
             return
         }else{
             salida.setValue("Análisis Exitoso");
+            boton.disabled = false;
         }
 
         // salida.setValue("Análisis Exitoso");
@@ -58,6 +70,7 @@ const analizar = () => {
             salida.setValue(
                 `Error: ${e.message}`
             );
+            boton.disabled = true;
 
         }else {
 
@@ -93,8 +106,8 @@ const analizar = () => {
                     }
                 }
             ]);
+            boton.disabled = true;
         }
-        
     }
 };
 
@@ -116,3 +129,5 @@ style.innerHTML = `
     }
 `;
 document.head.appendChild(style);
+
+// Boton para descargar modulo
