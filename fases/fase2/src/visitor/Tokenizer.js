@@ -1,4 +1,6 @@
 import Visitor from "./Visitor.js";
+import {Rango} from './CST.js'
+
 
 export default class Tokenizer extends Visitor {
 	generateTokenizer(grammar){
@@ -11,6 +13,7 @@ export default class Tokenizer extends Visitor {
 			character(len=*), intent(in) :: input
 			integer, intent(inout) :: cursor
 			character(len=:), allocatable :: lexeme
+			integer :: i
 
 			if (cursor > len(input)) then
 				allocate( character(len=3) :: lexeme )
@@ -31,12 +34,13 @@ export default class Tokenizer extends Visitor {
         return node.expr.accept(this);
     }
 	visitOpciones(node) {
-		return node.exprs[0].accept(this);
+		return node.exprs.map(node => node.accept(this)).join('\n');
 	}
 	visitUnion(node) {
-		return node.exprs[0].accept(this);
+		return node.exprs.map(node => node.accept(this)).join('\n');
 	}
 	visitExpresion(node) {
+		console.log('Expresion: ', node)
 		return node.expr.accept(this);
 	}
 	visitString(node) {
@@ -50,5 +54,44 @@ export default class Tokenizer extends Visitor {
 			return
 		end if
 		`
+	}
+	
+	generateCaracteres(chars) {
+		if (chars.length === 0) return '';
+		return `
+		if (findloc([${chars
+			.map((char) => `"${char}"`)
+			.join(', ')}], input(i:i), 1) > 0) then
+			lexeme = input(cursor:i)
+			cursor = i + 1
+			return
+		end if
+		`;
+	}
+
+	visitClase(node){
+		console.log('Clase', node)
+		return `
+		i = cursor
+		${this.generateCaracteres(
+			node.chars.filter((node) => typeof node === 'string')
+		)}
+		${
+			node.chars
+				.filter((node)  => node instanceof Rango )
+				.map((range) => range.accept(this))
+				.join('\n')
+		}
+		`
+	}
+
+	visitRango(node){
+		return `
+		if (input(i:i) >= "${node.rangoInicial}" .and. input(i:i) <= "${node.rangoFinal}") then
+			lexeme = input(cursor:i)
+			cursor = i + 1
+			return
+		end if
+			`;
 	}
 }

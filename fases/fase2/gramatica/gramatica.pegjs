@@ -1,17 +1,8 @@
 {{
-    // let identificadores = []
-
-    // import { identificadores } from '../index.js'
-
     import { ids, usos} from '../index.js'
     import { ErrorReglas } from './error.js';
     import { errores } from '../index.js';
-
-    import * as n from '../visitor/CST.js'
-
-
-
-
+    import * as n from '../visitor/CST.js';
 }}
 
 gramatica = _ prods:producciones+ _ {
@@ -31,19 +22,19 @@ gramatica = _ prods:producciones+ _ {
 }
 
 producciones = _ id:identificador _ alias:(literales)? _ "=" _ expr:opciones (_";")? { 
-    ids.push(id)
+    ids.push(id);
     return new n.Producciones(id, expr, alias);
 }
 
-opciones = expr:union rest:(_ "/" _ @union)*{
+opciones = expr:union rest:(_ "/" _ @union)* {
     return new n.Opciones([expr, ...rest]); // Crea un arreglo con las expresiones
 }
 
-union = expr:expresion rest:(_ @expresion !(_ literales? _ "=") )* {
+union = expr:expresion rest:(_ @expresion !(_ literales? _ "="))* {
     return new n.Union([expr, ...rest]);
 }
 
-expresion  = label:$(etiqueta/varios)? _ expr:expresiones _ qty:$([?+*]/conteo)?{
+expresion = label:$(etiqueta/varios)? _ expr:expresiones _ qty:$([?+*]/conteo)? {
     return new n.Expresion(expr, label, qty);
 }
 
@@ -51,35 +42,39 @@ etiqueta = ("@")? _ id:identificador _ ":" (varios)?
 
 varios = ("!"/"$"/"@"/"&")
 
-expresiones  =  id:identificador { usos.push(id) }
-                / valor:$literales isCase:"i"?{
-                    return new n.String(valor, isCase); // El isCase se usa para validar si es case insensitive
-                }
-                / "(" _ opciones _ ")"
-                / corchetes "i"?
-                / "."
-                / "!." 
+expresiones  =  id:identificador {
+        usos.push(id); 
+    }
+    / valor:$literales isCase:"i"? {
+        return new n.String(String(valor).replace(/['"]/g, ''), isCase); // El isCase se usa para validar si es case insensitive, se quitan las comillas
+    }
+    / "(" _ opciones _ ")"
+    / chars:clase isCase:"i"?{
+        return new n.Clase(chars, isCase)
+    }
+    / "."
+    / "!." 
 
 conteo = "|" _ (numero / id:identificador) _ "|"
         / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "|"
         / "|" _ (numero / id:identificador)? _ "," _ opciones _ "|"
         / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "," _ opciones _ "|"
 
-corchetes
-    = "[" contenido:(rango / contenido)+ "]" {
-        return `Entrada válida: [${input}]`;
-    }
+clase
+  = "[" @contenidoClase+ "]"
 
-rango
-    = inicio:caracter "-" fin:caracter {
-        if (inicio.charCodeAt(0) > fin.charCodeAt(0)) {
-            throw new Error(`Rango inválido: [${inicio}-${fin}]`);
-        }
-        return `${inicio}-${fin}`;
-    }
+contenidoClase
+  = rangoInicial:$caracter "-" rangoFinal:$caracter {
+    return new n.Rango(rangoInicial, rangoFinal);
+  }
+  / $caracter
 
 caracter
-    = [a-zA-Z0-9_ ] { return text()}
+  = [^\[\]\\]
+  / "\\" .
+
+//caracter
+//    = [a-zA-Z0-9_ ] { return text()}
 
 contenido
     = (corchete / texto)+
