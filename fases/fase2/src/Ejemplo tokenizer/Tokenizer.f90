@@ -65,7 +65,29 @@ module tokenizer
         lexeme = input(start:cursor - 1)
     end subroutine extractToken
 
-    
+    subroutine extractString(input, cursor, lexeme)
+        character(len=*), intent(in) :: input
+        integer, intent(inout) :: cursor
+        character(len=:), allocatable :: lexeme
+        integer :: start
+
+        start = cursor + 1
+        cursor = cursor + 1
+
+        do while (cursor <= len(input) .and. input(cursor:cursor) /= '"')
+            cursor = cursor + 1
+        end do
+
+        if (cursor <= len(input)) then
+            allocate(character(len=cursor - start) :: lexeme)
+            lexeme = input(start:cursor - 1)
+            cursor = cursor + 1
+        else
+            allocate(character(len=5) :: lexeme)
+            lexeme = "ERROR"
+        end if
+    end subroutine extractString
+
     subroutine extractSpace(input, cursor, lexeme)
         character(len=*), intent(in) :: input
         integer, intent(inout) :: cursor
