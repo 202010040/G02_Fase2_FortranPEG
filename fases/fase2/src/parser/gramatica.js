@@ -307,6 +307,7 @@ function peg$parse(input, options) {
 };
   var peg$f5 = function(id) {
         usos.push(id); 
+        return id;
     };
   var peg$f6 = function(valor, isCase) {
         return new n.String(String(valor).replace(/['"]/g, ''), isCase); // El isCase se usa para validar si es case insensitive, se quitan las comillas

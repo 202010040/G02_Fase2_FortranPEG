@@ -21,7 +21,7 @@ export default class Tokenizer extends Visitor {
 		return node.exprs.map(node => node.accept(this)).join('\n');
 	}
 	visitExpresion(node) {
-		console.log('Expresion: ', node)
+		//console.log('Expresion: ', node)
 		// Validacion de Str sencillos
 		if (node.expr instanceof String){
 			switch (node.qty) {
