@@ -4,7 +4,7 @@
 
 
 
-    import { ids, usos} from '../index.js'
+    import { ids, usos } from '../index.js'
     import { ErrorReglas } from './error.js';
     import { errores } from '../index.js';
     import * as n from '../visitor/CST.js';
@@ -270,6 +270,24 @@ function peg$parse(input, options) {
     let noEncontrados = usos.filter(item => !ids.includes(item));
     if (noEncontrados.length > 0) {
         errores.push(new ErrorReglas("Regla no encontrada: " + noEncontrados[0]));
+    }
+
+    // Validacion de reglas huerfanas
+    let huerfanos = [];
+
+    let usoCounts = usos.reduce((countMap, uso) => {
+        countMap[uso] = (countMap[uso] || 0) + 1;
+        return countMap;
+    }, {});
+
+    ids.slice(1).forEach(id => {
+        if (usoCounts[id] === 1) {
+            huerfanos.push(id);
+        }
+    });
+
+    if (huerfanos.length > 0) {
+        errores.push(new ErrorReglas("Una o mas reglas huerfanas encontradas: " + huerfanos.join(', ')));
     }
 
     return prods;

@@ -6,7 +6,7 @@ import { generateTokenizer } from './tokenizer/utils.js';
 export let ids = []
 export let usos = []
 export let errores = []
-
+ 
 
 // Crear el editor principal
 const editor = monaco.editor.create(
@@ -63,7 +63,8 @@ const analizar = () => {
     errores.length = 0
     try {
         const cst = parse(entrada)
-
+        console.log('Ids: ', ids);
+        console.log('Usos: ', usos);
         if(errores.length > 0){
             salida.setValue(
                 `Error: ${errores[0].message}`
