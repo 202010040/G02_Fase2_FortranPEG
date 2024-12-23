@@ -14,7 +14,8 @@ const nodes = {
     Conteo: ['min', 'max', 'opciones'],
     ContenidoClase: ['rangoInicial', 'rangoFinal'],
     Literal: ['value'],
-    Caracter: ['char']
+    Caracter: ['char'],
+    Referencia: ['id']
 };
 
 

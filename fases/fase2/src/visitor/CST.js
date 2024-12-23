@@ -119,17 +119,6 @@ export class Fin extends Node {
     }
 }
     
-export class Gramatica extends Node {
-    constructor(producciones) {
-        super();
-        this.producciones = producciones;
-    }
-
-    accept(visitor) {
-        return visitor.visitGramatica(this);
-    }
-}
-    
 export class Etiqueta extends Node {
     constructor(id, varios) {
         super();
@@ -197,6 +186,17 @@ export class Caracter extends Node {
 
     accept(visitor) {
         return visitor.visitCaracter(this);
+    }
+}
+    
+export class Referencia extends Node {
+    constructor(id) {
+        super();
+        this.id = id;
+    }
+
+    accept(visitor) {
+        return visitor.visitReferencia(this);
     }
 }
     

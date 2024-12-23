@@ -40,6 +40,7 @@ gramatica = _ prods:producciones+ _ {
 }
 
 producciones = _ id:identificador _ alias:(literales)? _ "=" _ expr:opciones (_";")? { 
+    ids.push(id);
     return new n.Producciones(id, expr, alias);
 }
 
@@ -61,7 +62,7 @@ varios = ("!"/"$"/"@"/"&")
 
 expresiones  =  id:identificador {
         usos.push(id); 
-        return id; 
+        return new n.Referencia(id);
     }
     / valor:$literales isCase:"i"? {
         return new n.String(String(valor).replace(/['"]/g, ''), isCase); // El isCase se usa para validar si es case insensitive, se quitan las comillas

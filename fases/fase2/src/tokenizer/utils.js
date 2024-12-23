@@ -1,7 +1,7 @@
 import Tokenizer from "./Tokenizer.js"
 
 export function generateTokenizer(grammar){
-    console.log(grammar);
+    //console.log(grammar);
     const tokenizer = new Tokenizer()
     return `
 module tokenizer
