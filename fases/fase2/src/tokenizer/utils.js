@@ -1,6 +1,7 @@
 import Tokenizer from "./Tokenizer.js"
 
 export function generateTokenizer(grammar){
+    console.log(grammar);
     const tokenizer = new Tokenizer()
     return `
     module tokenizer
@@ -12,6 +13,7 @@ export function generateTokenizer(grammar){
         integer, intent(inout) :: cursor
         character(len=:), allocatable :: lexeme
         integer :: i
+        logical :: ejecuta_cliclo
 
         if (cursor > len(input)) then
             allocate( character(len=3) :: lexeme )
@@ -19,7 +21,7 @@ export function generateTokenizer(grammar){
             return
         end if
 
-        ${grammar.map((produccion) => produccion.accept(tokenizer)).join('\n')}
+        ${grammar.producciones.map((produccion) => produccion.accept(tokenizer)).join('\n')}
 
         print *, "error lexico en col ", cursor, ', "'//input(cursor:cursor)//'"'
         lexeme = "ERROR"

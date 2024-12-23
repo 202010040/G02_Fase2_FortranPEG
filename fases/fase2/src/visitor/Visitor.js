@@ -11,4 +11,11 @@ export default class Visitor {
 	visitIdentificador(node) {}
 	visitPunto(node) {}
 	visitFin(node) {}
+	visitGramatica(node) {}
+	visitEtiqueta(node) {}
+	visitVarios(node) {}
+	visitConteo(node) {}
+	visitContenidoClase(node) {}
+	visitLiteral(node) {}
+	visitCaracter(node) {}
 }

@@ -9,6 +9,14 @@ const nodes = {
     Identificador: ['id'],
     Punto: [],
     Fin: [],
+    Gramatica: ['producciones'],
+    Etiqueta: ['id', 'varios'],
+    Varios: ['symbol'],
+    Conteo: ['min', 'max', 'opciones'],
+    ContenidoClase: ['rangoInicial', 'rangoFinal'],
+    Literal: ['value'],
+    Caracter: ['char']
 };
+
 
 export default nodes;

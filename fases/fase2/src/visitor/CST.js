@@ -119,3 +119,84 @@ export class Fin extends Node {
     }
 }
     
+export class Gramatica extends Node {
+    constructor(producciones) {
+        super();
+        this.producciones = producciones;
+    }
+
+    accept(visitor) {
+        return visitor.visitGramatica(this);
+    }
+}
+    
+export class Etiqueta extends Node {
+    constructor(id, varios) {
+        super();
+        this.id = id;
+		this.varios = varios;
+    }
+
+    accept(visitor) {
+        return visitor.visitEtiqueta(this);
+    }
+}
+    
+export class Varios extends Node {
+    constructor(symbol) {
+        super();
+        this.symbol = symbol;
+    }
+
+    accept(visitor) {
+        return visitor.visitVarios(this);
+    }
+}
+    
+export class Conteo extends Node {
+    constructor(min, max, opciones) {
+        super();
+        this.min = min;
+		this.max = max;
+		this.opciones = opciones;
+    }
+
+    accept(visitor) {
+        return visitor.visitConteo(this);
+    }
+}
+    
+export class ContenidoClase extends Node {
+    constructor(rangoInicial, rangoFinal) {
+        super();
+        this.rangoInicial = rangoInicial;
+		this.rangoFinal = rangoFinal;
+    }
+
+    accept(visitor) {
+        return visitor.visitContenidoClase(this);
+    }
+}
+    
+export class Literal extends Node {
+    constructor(value) {
+        super();
+        this.value = value;
+    }
+
+    accept(visitor) {
+        return visitor.visitLiteral(this);
+    }
+}
+    
+export class Caracter extends Node {
+    constructor(char) {
+        super();
+        this.char = char;
+    }
+
+    accept(visitor) {
+        return visitor.visitCaracter(this);
+    }
+}
+    
