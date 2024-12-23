@@ -44,35 +44,53 @@ producciones = _ id:identificador _ alias:(literales)? _ "=" _ expr:opciones (_"
     return new n.Producciones(id, expr, alias);
 }
 
+// Producción principal que reconoce opciones dentro de paréntesis y operadores
 opciones = expr:union rest:(_ "/" _ @union)* {
-    return new n.Opciones([expr, ...rest]); // Crea un arreglo con las expresiones
+    // Crea una nueva instancia de Opciones con todas las expresiones unidas
+    return new n.Opciones([expr, ...rest]);
 }
 
 union = expr:expresion rest:(_ @expresion !(_ literales? _ "="))* {
+    // Une múltiples expresiones en una sola estructura de tipo Unión
     return new n.Union([expr, ...rest]);
 }
 
 expresion = label:$(etiqueta/varios)? _ expr:expresiones _ qty:$([?+*]/conteo)? {
+    // Trata la expresión como una unidad que puede tener un operador aplicado
     return new n.Expresion(expr, label, qty);
 }
 
-etiqueta = ("@")? _ id:identificador _ ":" (varios)?
+etiqueta = ("@")? _ id:identificador _ ":" (varios)? // Manejo de etiquetas
+varios = ("!"/"$"/"@"/"&") // Reconoce símbolos adicionales en etiquetas
 
-varios = ("!"/"$"/"@"/"&")
-
-expresiones  =  id:identificador {
+expresiones =
+    id:identificador {
+        // Si se encuentra un identificador, se registra como una referencia
         usos.push(id); 
         return new n.Referencia(id);
     }
     / valor:$literales isCase:"i"? {
-        return new n.String(String(valor).replace(/['"]/g, ''), isCase); // El isCase se usa para validar si es case insensitive, se quitan las comillas
+        // Maneja literales y les aplica el manejo de case insensitive si está especificado
+        return new n.String(String(valor).replace(/['"]/g, ''), isCase);
     }
-    / "(" _ opciones _ ")"
-    / chars:clase isCase:"i"?{
-        return new n.Clase(chars, isCase)
+    / "(" _ op:opciones _ ")" qty:$([?+*]/conteo)? {
+        // Maneja expresiones entre paréntesis
+        // Se devuelve como Opciones dentro de una Expresión con operador (si aplica)
+        const exprOpciones = new n.Opciones(op);
+        return qty
+            ? new n.Expresion(exprOpciones, null, qty) // Aplica operador si existe
+            : exprOpciones; // Solo devuelve las opciones si no hay operador
     }
-    / "."
-    / "!." 
+    / chars:clase isCase:"i"? {
+        // Manejo de clases de caracteres como [a-z]
+        return new n.Clase(chars, isCase);
+    }
+    / "." { 
+        return new n.AnyCharacter(); // Reconoce cualquier carácter
+    }
+    / "!." { 
+        return new n.NotAnyCharacter(); // Reconoce cualquier carácter excepto el punto
+    }
 
 conteo = "|" _ (numero / id:identificador) _ "|"
         / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "|"
