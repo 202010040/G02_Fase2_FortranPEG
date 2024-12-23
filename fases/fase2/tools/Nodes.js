@@ -9,7 +9,6 @@ const nodes = {
     Identificador: ['id'],
     Punto: [],
     Fin: [],
-    Gramatica: ['producciones'],
     Etiqueta: ['id', 'varios'],
     Varios: ['symbol'],
     Conteo: ['min', 'max', 'opciones'],

@@ -2,8 +2,9 @@
 
 import Visitor from "../visitor/Visitor.js";
 import {Rango} from '../visitor/CST.js';
-import { generateCaracteres } from "./utils.js";
+import { generateCaracteres, TernariaLiterales } from "./utils.js";
 import { CondicionalStrSencilla } from "./utils.js";
+import { KleeneLiterales, PositivaLiterales  } from "./utils.js";
 
 export default class Tokenizer extends Visitor {
 
@@ -21,30 +22,16 @@ export default class Tokenizer extends Visitor {
 	}
 	visitExpresion(node) {
 		console.log('Expresion: ', node)
-		if (node.qty !== '*'){
-			return node.expr.accept(this);
+		switch (node.qty) {
+			case "*":
+				return KleeneLiterales(node.expr);
+			case "+":
+				return PositivaLiterales(node.expr);
+			case "?":
+				return TernariaLiterales(node.expr);
+			default:
+				return node.expr.accept(this);
 		}
-		let condicional = CondicionalStrSencilla(node.expr);
-		return `
-		! * en literales
-		ejecuta_ciclo = .true.
-		start_cursor = cursor  
-		allocate(character(len=0) :: lexeme_accumulated)  
-		do while (ejecuta_ciclo)	
-			if ( ${condicional} ) then
-                cursor = cursor + ${node.expr.val.length}
-                lexeme_accumulated = lexeme_accumulated // "${node.expr.val}"
-            else
-                ejecuta_ciclo = .false.
-            end if
-		end do
-		if (len(lexeme_accumulated) > 0) then
-			allocate(character(len=len(lexeme_accumulated)) :: lexeme)
-			lexeme = lexeme_accumulated
-        	return
-    	end if
-	`
-		
 	}
 	
 	visitString(node) {
