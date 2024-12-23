@@ -89,66 +89,6 @@ export default class Tokenizer extends Visitor {
         `;
     }
 
-    visitPatron(node) {
-		// Manejo específico del patrón [a-z][A-Z]
-		if (node.type === "range" && node.pattern === "[a-z][A-Z]") {
-			const condicionalAtoZ = CondicionalCorchete({
-				chars: [{ rangoInicial: "a", rangoFinal: "z" }],
-			});
-			const condicionalUpperAtoZ = CondicionalCorchete({
-				chars: [{ rangoInicial: "A", rangoFinal: "Z" }],
-			});
-	
-			return `
-			! Manejo del patrón [a-z][A-Z] repetido
-			ejecuta_ciclo = .true.
-			allocate(character(len=0) :: lexeme_accumulated)
-			do while (ejecuta_ciclo)
-				! Verificar si el siguiente carácter está en el rango [a-z]
-				if (${condicionalAtoZ}) then
-					call appendCharacter(lexeme_accumulated, input(cursor:cursor))
-					cursor = cursor + 1
-				else
-					exit
-				end if
-	
-				! Verificar si el siguiente carácter está en el rango [A-Z]
-				if (${condicionalUpperAtoZ}) then
-					call appendCharacter(lexeme_accumulated, input(cursor:cursor))
-					cursor = cursor + 1
-				else
-					exit
-				end if
-			end do
-	
-			if (len(lexeme_accumulated) > 0) then
-				allocate(character(len=len(lexeme_accumulated)) :: lexeme)
-				lexeme = lexeme_accumulated
-				return
-			end if
-			`;
-		}
-	
-		// Manejo genérico para otros patrones
-		return `
-		! Manejo de patrones no reconocidos
-		print *, "Patrón no reconocido en col ", cursor
-		allocate(character(len=5) :: lexeme)
-		lexeme = "ERROR"
-		cursor = cursor + 1
-		`;
-	}
-	
-
-    visitDefault(node) {
-        return `
-        ! Manejo de caracteres no reconocidos
-        print *, "error lexico en col ", cursor, ', "' // input(cursor:cursor) // '"'
-        allocate(character(len=5) :: lexeme)
-        lexeme = "ERROR"
-        cursor = cursor + 1
-        `;
-    }
 
 	visitReferencia(node) {
 		// Asume que la producción referenciada será visitada y procesada
