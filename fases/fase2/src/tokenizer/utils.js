@@ -1,7 +1,6 @@
 import Tokenizer from "./Tokenizer.js"
 
 export function generateTokenizer(grammar){
-    console.log(grammar);
     const tokenizer = new Tokenizer()
     return `
 module tokenizer
@@ -139,4 +138,34 @@ export function TernariaLiterales(node){
         return
     end if
 `    
+}
+
+export function KleeneCorchetes(node) {
+    let condiciones = node.chars.map(char => {
+        if (char.rangoInicial && char.rangoFinal) {
+            return `input(cursor:cursor) >= '${char.rangoInicial}' .and. input(cursor:cursor) <= '${char.rangoFinal}'`;
+        } else {
+            return `input(cursor:cursor) == '${char}'`;
+        }
+    });
+    let condicional = `cursor <= len(input) .and. (` + condiciones.join(" .or. ") + `)`;
+    return `
+    ! * en []
+    ejecuta_ciclo = .true.
+    start_cursor = cursor
+    allocate(character(len=0) :: lexeme_accumulated)
+    do while (ejecuta_ciclo)
+        if (${condicional}) then
+            lexeme_accumulated = lexeme_accumulated // input(cursor:cursor)
+            cursor = cursor + 1
+        else
+            ejecuta_ciclo = .false.
+        end if
+    end do
+    if (len(lexeme_accumulated) > 0) then
+        allocate(character(len=len(lexeme_accumulated)) :: lexeme)
+        lexeme = lexeme_accumulated
+        return
+    end if
+    `;
 }

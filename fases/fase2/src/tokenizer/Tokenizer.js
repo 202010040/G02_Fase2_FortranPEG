@@ -1,28 +1,30 @@
 
 
 import Visitor from "../visitor/Visitor.js";
-import {Rango} from '../visitor/CST.js';
-import { generateCaracteres, TernariaLiterales } from "./utils.js";
+import {Clase, Rango} from '../visitor/CST.js';
+import { generateCaracteres, KleeneCorchetes, TernariaLiterales } from "./utils.js";
 import { CondicionalStrSencilla } from "./utils.js";
 import { KleeneLiterales, PositivaLiterales  } from "./utils.js";
 
 export default class Tokenizer extends Visitor {
 
     visitProducciones(node) {
-		console.log('Producciones: ', node) 
+		//console.log('Producciones: ', node) 
         return node.expr.accept(this);
     }
 	visitOpciones(node) {
-		console.log('Opciones: ', node)
+		//console.log('Opciones: ', node)
 		return node.exprs.map(node => node.accept(this)).join('\n');
 	}
 	visitUnion(node) {
-		console.log('Expresion: ', node)
+		//console.log('Expresion: ', node)
 		return node.exprs.map(node => node.accept(this)).join('\n');
 	}
 	visitExpresion(node) {
 		console.log('Expresion: ', node)
-		switch (node.qty) {
+		// Validacion de Str sencillos
+		if (node.expr instanceof String){
+			switch (node.qty) {
 			case "*":
 				return KleeneLiterales(node.expr);
 			case "+":
@@ -31,11 +33,27 @@ export default class Tokenizer extends Visitor {
 				return TernariaLiterales(node.expr);
 			default:
 				return node.expr.accept(this);
+			}	
 		}
+		if (node.expr instanceof Clase){
+			switch (node.qty) {
+			case "*":
+				return KleeneCorchetes(node.expr);
+			case "+":
+				return PositivaLiterales(node.expr);
+			case "?":
+				return TernariaLiterales(node.expr);
+			default:
+				return node.expr.accept(this);
+			}	
+		}
+		
+		return node.expr.accept(this);
+
 	}
 	
 	visitString(node) {
-		console.log('String: ', node)
+		//console.log('String: ', node)
 		let condicional = CondicionalStrSencilla(node);
 
 		return `
