@@ -140,15 +140,37 @@ export function TernariaLiterales(node){
 `    
 }
 
-export function KleeneCorchetes(node) {
+export function CondicionalCorchete(node) {
+    let caseInsensitive = node.isCase != null;
+
+    // Generar condiciones basadas en rangos y caracteres específicos
     let condiciones = node.chars.map(char => {
         if (char.rangoInicial && char.rangoFinal) {
-            return `input(cursor:cursor) >= '${char.rangoInicial}' .and. input(cursor:cursor) <= '${char.rangoFinal}'`;
+            // Rango de caracteres
+            if (caseInsensitive) {
+                return `( to_lower(input(cursor:cursor)) >= '${char.rangoInicial.toLowerCase()}' .and. to_lower(input(cursor:cursor)) <= '${char.rangoFinal.toLowerCase()}' )`;
+            } else {
+                return `( input(cursor:cursor) >= '${char.rangoInicial}' .and. input(cursor:cursor) <= '${char.rangoFinal}' )`;
+            }
         } else {
-            return `input(cursor:cursor) == '${char}'`;
+            // Carácter específico
+            if (caseInsensitive) {
+                return `to_lower(input(cursor:cursor)) == '${char.toLowerCase()}'`;
+            } else {
+                return `input(cursor:cursor) == '${char}'`;
+            }
         }
     });
+
+    // Combinar las condiciones con un límite para no exceder el tamaño del input
     let condicional = `cursor <= len(input) .and. (` + condiciones.join(" .or. ") + `)`;
+    return condicional;
+}
+
+
+export function KleeneCorchetes(node) {
+    let condicional = CondicionalCorchete(node);
+    
     return `
     ! * en []
     ejecuta_ciclo = .true.
@@ -167,5 +189,85 @@ export function KleeneCorchetes(node) {
         lexeme = lexeme_accumulated
         return
     end if
+    `;
+}
+
+export function PositivaCorchetes(node) {
+    // Generar condiciones basadas en rangos y caracteres específicos
+    let condicional = CondicionalCorchete(node);
+    // Validar si el cursor supera el tamaño del input antes de cualquier acceso
+    return `
+    ! + en []
+    ejecuta_ciclo = .true.
+    start_cursor = cursor
+    allocate(character(len=0) :: lexeme_accumulated)
+
+    ! Verificar EOF antes de cualquier operación
+    if (cursor > len(input)) then
+        allocate(character(len=3) :: lexeme)
+        lexeme = "EOF"
+        return
+    end if
+
+    ! Validar al menos un carácter
+    if (${condicional}) then
+        lexeme_accumulated = lexeme_accumulated // input(cursor:cursor)
+        cursor = cursor + 1
+    else
+        print *, "Error léxico en col ", cursor, ', "'//input(cursor:cursor)//'"'
+        allocate(character(len=5) :: lexeme)
+        lexeme = "ERROR"
+        return
+    end if
+
+    ! Procesar caracteres adicionales
+    do while (ejecuta_ciclo)
+        if (cursor > len(input)) exit
+        if (${condicional}) then
+            lexeme_accumulated = lexeme_accumulated // input(cursor:cursor)
+            cursor = cursor + 1
+        else
+            ejecuta_ciclo = .false.
+        end if
+    end do
+
+    ! Verificar si se acumuló algún lexema válido
+    if (len(lexeme_accumulated) > 0) then
+        allocate(character(len=len(lexeme_accumulated)) :: lexeme)
+        lexeme = lexeme_accumulated
+        return
+    end if
+
+    ! Manejo de EOF explícito
+    if (cursor > len(input)) then
+        allocate(character(len=3) :: lexeme)
+        lexeme = "EOF"
+        return
+    end if
+    `;
+}
+
+export function TernariaCorchetes(node) {
+    // Generar condiciones basadas en rangos y caracteres específicos
+    let condicional = CondicionalCorchete(node);
+
+    return `
+    ! ? en []
+    start_cursor = cursor
+    allocate(character(len=0) :: lexeme_accumulated)
+
+    ! Validar si el carácter cumple la condición
+    if (${condicional}) then
+        lexeme_accumulated = lexeme_accumulated // input(cursor:cursor)
+        cursor = cursor + 1
+    end if
+
+    ! Generar el lexema acumulado
+    if (len(lexeme_accumulated) > 0) then
+        allocate(character(len=len(lexeme_accumulated)) :: lexeme)
+        lexeme = lexeme_accumulated
+        return
+    end if
+
     `;
 }

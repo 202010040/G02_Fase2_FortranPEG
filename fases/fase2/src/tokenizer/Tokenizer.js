@@ -2,7 +2,7 @@
 
 import Visitor from "../visitor/Visitor.js";
 import {Clase, Rango} from '../visitor/CST.js';
-import { generateCaracteres, KleeneCorchetes, TernariaLiterales } from "./utils.js";
+import { generateCaracteres, KleeneCorchetes, PositivaCorchetes, TernariaCorchetes, TernariaLiterales } from "./utils.js";
 import { CondicionalStrSencilla } from "./utils.js";
 import { KleeneLiterales, PositivaLiterales  } from "./utils.js";
 
@@ -40,9 +40,9 @@ export default class Tokenizer extends Visitor {
 			case "*":
 				return KleeneCorchetes(node.expr);
 			case "+":
-				return PositivaLiterales(node.expr);
+				return PositivaCorchetes(node.expr);
 			case "?":
-				return TernariaLiterales(node.expr);
+				return TernariaCorchetes(node.expr);
 			default:
 				return node.expr.accept(this);
 			}	
