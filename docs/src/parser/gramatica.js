@@ -4,7 +4,7 @@
 
 
 
-    import { ids, usos} from '../index.js'
+    import { ids, usos } from '../index.js'
     import { ErrorReglas } from './error.js';
     import { errores } from '../index.js';
     import * as n from '../visitor/CST.js';
@@ -272,6 +272,24 @@ function peg$parse(input, options) {
         errores.push(new ErrorReglas("Regla no encontrada: " + noEncontrados[0]));
     }
 
+    // Validacion de reglas huerfanas
+    let huerfanos = [];
+
+    let usoCounts = usos.reduce((countMap, uso) => {
+        countMap[uso] = (countMap[uso] || 0) + 1;
+        return countMap;
+    }, {});
+
+    ids.slice(1).forEach(id => {
+        if (usoCounts[id] === 1) {
+            huerfanos.push(id);
+        }
+    });
+
+    if (huerfanos.length > 0) {
+        errores.push(new ErrorReglas("Una o mas reglas huerfanas encontradas: " + huerfanos.join(', ')));
+    }
+
     return prods;
 };
   var peg$f1 = function(id, alias, expr) { 
@@ -279,27 +297,48 @@ function peg$parse(input, options) {
     return new n.Producciones(id, expr, alias);
 };
   var peg$f2 = function(expr, rest) {
-    return new n.Opciones([expr, ...rest]); // Crea un arreglo con las expresiones
+    // Crea una nueva instancia de Opciones con todas las expresiones unidas
+    return new n.Opciones([expr, ...rest]);
 };
   var peg$f3 = function(expr, rest) {
+    // Une múltiples expresiones en una sola estructura de tipo Unión
     return new n.Union([expr, ...rest]);
 };
   var peg$f4 = function(label, expr, qty) {
+    // Trata la expresión como una unidad que puede tener un operador aplicado
     return new n.Expresion(expr, label, qty);
 };
   var peg$f5 = function(id) {
+        // Si se encuentra un identificador, se registra como una referencia
         usos.push(id); 
+        return new n.Referencia(id);
     };
   var peg$f6 = function(valor, isCase) {
-        return new n.String(String(valor).replace(/['"]/g, ''), isCase); // El isCase se usa para validar si es case insensitive, se quitan las comillas
+        // Maneja literales y les aplica el manejo de case insensitive si está especificado
+        return new n.String(String(valor).replace(/['"]/g, ''), isCase);
     };
-  var peg$f7 = function(chars, isCase) {
-        return new n.Clase(chars, isCase)
+  var peg$f7 = function(op, qty) {
+        // Maneja expresiones entre paréntesis
+        // Se devuelve como Opciones dentro de una Expresión con operador (si aplica)
+        const exprOpciones = new n.Opciones(op);
+        return qty
+            ? new n.Expresion(exprOpciones, null, qty) // Aplica operador si existe
+            : exprOpciones; // Solo devuelve las opciones si no hay operador
     };
-  var peg$f8 = function(rangoInicial, rangoFinal) {
+  var peg$f8 = function(chars, isCase) {
+        // Manejo de clases de caracteres como [a-z]
+        return new n.Clase(chars, isCase);
+    };
+  var peg$f9 = function() { 
+        return new n.AnyCharacter(); // Reconoce cualquier carácter
+    };
+  var peg$f10 = function() { 
+        return new n.NotAnyCharacter(); // Reconoce cualquier carácter excepto el punto
+    };
+  var peg$f11 = function(rangoInicial, rangoFinal) {
     return new n.Rango(rangoInicial, rangoFinal);
   };
-  var peg$f9 = function() { return text() };
+  var peg$f12 = function() { return text() };
   var peg$currPos = options.peg$currPos | 0;
   var peg$savedPos = peg$currPos;
   var peg$posDetailsCache = [{ line: 1, column: 1 }];
@@ -823,7 +862,7 @@ function peg$parse(input, options) {
   }
 
   function peg$parseexpresiones() {
-    var s0, s1, s2, s3, s4, s5;
+    var s0, s1, s2, s3, s4, s5, s6, s7;
 
     s0 = peg$currPos;
     s1 = peg$parseidentificador();
@@ -880,8 +919,23 @@ function peg$parse(input, options) {
               if (peg$silentFails === 0) { peg$fail(peg$e9); }
             }
             if (s5 !== peg$FAILED) {
-              s1 = [s1, s2, s3, s4, s5];
-              s0 = s1;
+              s6 = peg$currPos;
+              s7 = input.charAt(peg$currPos);
+              if (peg$r0.test(s7)) {
+                peg$currPos++;
+              } else {
+                s7 = peg$FAILED;
+                if (peg$silentFails === 0) { peg$fail(peg$e3); }
+              }
+              if (s7 === peg$FAILED) {
+                s7 = peg$parseconteo();
+              }
+              if (s7 === peg$FAILED) {
+                s7 = null;
+              }
+              s6 = input.substring(s6, peg$currPos);
+              peg$savedPos = s0;
+              s0 = peg$f7(s3, s6);
             } else {
               peg$currPos = s0;
               s0 = peg$FAILED;
@@ -909,27 +963,39 @@ function peg$parse(input, options) {
               s2 = null;
             }
             peg$savedPos = s0;
-            s0 = peg$f7(s1, s2);
+            s0 = peg$f8(s1, s2);
           } else {
             peg$currPos = s0;
             s0 = peg$FAILED;
           }
           if (s0 === peg$FAILED) {
+            s0 = peg$currPos;
             if (input.charCodeAt(peg$currPos) === 46) {
-              s0 = peg$c8;
+              s1 = peg$c8;
               peg$currPos++;
             } else {
-              s0 = peg$FAILED;
+              s1 = peg$FAILED;
               if (peg$silentFails === 0) { peg$fail(peg$e10); }
             }
+            if (s1 !== peg$FAILED) {
+              peg$savedPos = s0;
+              s1 = peg$f9();
+            }
+            s0 = s1;
             if (s0 === peg$FAILED) {
+              s0 = peg$currPos;
               if (input.substr(peg$currPos, 2) === peg$c9) {
-                s0 = peg$c9;
+                s1 = peg$c9;
                 peg$currPos += 2;
               } else {
-                s0 = peg$FAILED;
+                s1 = peg$FAILED;
                 if (peg$silentFails === 0) { peg$fail(peg$e11); }
               }
+              if (s1 !== peg$FAILED) {
+                peg$savedPos = s0;
+                s1 = peg$f10();
+              }
+              s0 = s1;
             }
           }
         }
@@ -1257,7 +1323,7 @@ function peg$parse(input, options) {
         }
         if (s3 !== peg$FAILED) {
           peg$savedPos = s0;
-          s0 = peg$f8(s1, s3);
+          s0 = peg$f11(s1, s3);
         } else {
           peg$currPos = s0;
           s0 = peg$FAILED;
@@ -1768,7 +1834,7 @@ function peg$parse(input, options) {
         }
       }
       peg$savedPos = s0;
-      s0 = peg$f9();
+      s0 = peg$f12();
     } else {
       peg$currPos = s0;
       s0 = peg$FAILED;

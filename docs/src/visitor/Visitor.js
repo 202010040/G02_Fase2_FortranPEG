@@ -8,4 +8,14 @@ export default class Visitor {
 	visitString(node) {}
 	visitClase(node) {}
 	visitRango(node) {}
+	visitIdentificador(node) {}
+	visitPunto(node) {}
+	visitFin(node) {}
+	visitEtiqueta(node) {}
+	visitVarios(node) {}
+	visitConteo(node) {}
+	visitContenidoClase(node) {}
+	visitLiteral(node) {}
+	visitCaracter(node) {}
+	visitReferencia(node) {}
 }

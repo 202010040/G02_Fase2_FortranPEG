@@ -1,9 +1,9 @@
 {{
-    import { ids, usos} from '../index.js'
+    import { ids, usos } from '../index.js'
     import { ErrorReglas } from './error.js';
     import { errores } from '../index.js';
     import * as n from '../visitor/CST.js';
-}}
+}} 
 
 gramatica = _ prods:producciones+ _ {
 
@@ -18,6 +18,24 @@ gramatica = _ prods:producciones+ _ {
         errores.push(new ErrorReglas("Regla no encontrada: " + noEncontrados[0]));
     }
 
+    // Validacion de reglas huerfanas
+    let huerfanos = [];
+
+    let usoCounts = usos.reduce((countMap, uso) => {
+        countMap[uso] = (countMap[uso] || 0) + 1;
+        return countMap;
+    }, {});
+
+    ids.slice(1).forEach(id => {
+        if (usoCounts[id] === 1) {
+            huerfanos.push(id);
+        }
+    });
+
+    if (huerfanos.length > 0) {
+        errores.push(new ErrorReglas("Una o mas reglas huerfanas encontradas: " + huerfanos.join(', ')));
+    }
+
     return prods;
 }
 
@@ -26,34 +44,44 @@ producciones = _ id:identificador _ alias:(literales)? _ "=" _ expr:opciones (_"
     return new n.Producciones(id, expr, alias);
 }
 
+// Producción principal que reconoce opciones dentro de paréntesis y operadores
 opciones = expr:union rest:(_ "/" _ @union)* {
     return new n.Opciones([expr, ...rest]); // Crea un arreglo con las expresiones
 }
 
 union = expr:expresion rest:(_ @expresion !(_ literales? _ "="))* {
-    return new n.Union([expr, ...rest]);
+    return new n.Union([expr, ...rest]); // Une varias expresiones
 }
 
 expresion = label:$(etiqueta/varios)? _ expr:expresiones _ qty:$([?+*]/conteo)? {
-    return new n.Expresion(expr, label, qty);
+    return new n.Expresion(expr, label, qty); // Asocia una cantidad o repetición a la expresión
 }
 
-etiqueta = ("@")? _ id:identificador _ ":" (varios)?
+etiqueta = ("@")? _ id:identificador _ ":" (varios)? // Manejo de etiquetas
+varios = ("!"/"$"/"@"/"&") // Reconoce símbolos adicionales en etiquetas
 
-varios = ("!"/"$"/"@"/"&")
-
-expresiones  =  id:identificador {
+// Producción de expresiones
+expresiones =
+    id:identificador {
         usos.push(id); 
+        return new n.Referencia(id); // Referencia a otro identificador
     }
     / valor:$literales isCase:"i"? {
-        return new n.String(String(valor).replace(/['"]/g, ''), isCase); // El isCase se usa para validar si es case insensitive, se quitan las comillas
+        return new n.String(String(valor).replace(/['"]/g, ''), isCase); // Quita comillas y valida case insensitive
     }
-    / "(" _ opciones _ ")"
-    / chars:clase isCase:"i"?{
-        return new n.Clase(chars, isCase)
+    / "(" _ op:opciones _ ")" qty:$([?+*]/conteo)? {
+        // Maneja expresiones entre paréntesis y aplica operadores
+        return new n.Expresion(op, null, qty);
     }
-    / "."
-    / "!." 
+    / chars:clase isCase:"i"? {
+        return new n.Clase(chars, isCase); // Clase de caracteres
+    }
+    / "." { 
+        
+    }
+    / "!." { 
+        
+    }
 
 conteo = "|" _ (numero / id:identificador) _ "|"
         / "|" _ (numero / id:identificador)? _ ".." _ (numero / id2:identificador)? _ "|"

@@ -1,12 +1,12 @@
 import * as monaco from 'https://cdn.jsdelivr.net/npm/monaco-editor@0.50.0/+esm';
 import { parse } from './parser/gramatica.js';
-import Tokenizer from './visitor/Tokenizer.js';
+import { generateTokenizer } from './tokenizer/utils.js';
 
 
 export let ids = []
 export let usos = []
 export let errores = []
-
+ 
 
 // Crear el editor principal
 const editor = monaco.editor.create(
@@ -63,7 +63,6 @@ const analizar = () => {
     errores.length = 0
     try {
         const cst = parse(entrada)
-
         if(errores.length > 0){
             salida.setValue(
                 `Error: ${errores[0].message}`
@@ -78,8 +77,7 @@ const analizar = () => {
         // Limpiar decoraciones previas si la validación es exitosa
         decorations = editor.deltaDecorations(decorations, []);
 
-        const tokenizer = new Tokenizer();
-        contenidoArchivo = tokenizer.generateTokenizer(cst); // Con el tokenizador genera una gramatica basada en el arbol
+        contenidoArchivo =generateTokenizer(cst); // Con el tokenizador genera una gramatica basada en el arbol
     
 
     } catch (e) {

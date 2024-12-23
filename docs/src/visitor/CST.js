@@ -86,3 +86,117 @@ export class Rango extends Node {
     }
 }
     
+export class Identificador extends Node {
+    constructor(id) {
+        super();
+        this.id = id;
+    }
+
+    accept(visitor) {
+        return visitor.visitIdentificador(this);
+    }
+}
+    
+export class Punto extends Node {
+    constructor() {
+        super();
+        
+    }
+
+    accept(visitor) {
+        return visitor.visitPunto(this);
+    }
+}
+    
+export class Fin extends Node {
+    constructor() {
+        super();
+        
+    }
+
+    accept(visitor) {
+        return visitor.visitFin(this);
+    }
+}
+    
+export class Etiqueta extends Node {
+    constructor(id, varios) {
+        super();
+        this.id = id;
+		this.varios = varios;
+    }
+
+    accept(visitor) {
+        return visitor.visitEtiqueta(this);
+    }
+}
+    
+export class Varios extends Node {
+    constructor(symbol) {
+        super();
+        this.symbol = symbol;
+    }
+
+    accept(visitor) {
+        return visitor.visitVarios(this);
+    }
+}
+    
+export class Conteo extends Node {
+    constructor(min, max, opciones) {
+        super();
+        this.min = min;
+		this.max = max;
+		this.opciones = opciones;
+    }
+
+    accept(visitor) {
+        return visitor.visitConteo(this);
+    }
+}
+    
+export class ContenidoClase extends Node {
+    constructor(rangoInicial, rangoFinal) {
+        super();
+        this.rangoInicial = rangoInicial;
+		this.rangoFinal = rangoFinal;
+    }
+
+    accept(visitor) {
+        return visitor.visitContenidoClase(this);
+    }
+}
+    
+export class Literal extends Node {
+    constructor(value) {
+        super();
+        this.value = value;
+    }
+
+    accept(visitor) {
+        return visitor.visitLiteral(this);
+    }
+}
+    
+export class Caracter extends Node {
+    constructor(char) {
+        super();
+        this.char = char;
+    }
+
+    accept(visitor) {
+        return visitor.visitCaracter(this);
+    }
+}
+    
+export class Referencia extends Node {
+    constructor(id) {
+        super();
+        this.id = id;
+    }
+
+    accept(visitor) {
+        return visitor.visitReferencia(this);
+    }
+}
+    
