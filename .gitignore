@@ -38,9 +38,7 @@ bower_components
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
-# Dependency directories
-node_modules/
-jspm_packages/
+
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
@@ -63,8 +61,6 @@ web_modules/
 .rts2_cache_es/
 .rts2_cache_umd/
 
-# Optional REPL history
-.node_repl_history
 
 # Output of 'npm pack'
 *.tgz
@@ -128,9 +124,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
-# Modulos
-docs/package.json
-fases/fase2/package.json
-docs/package-lock.json
-fases/fase2/package-lock.json
