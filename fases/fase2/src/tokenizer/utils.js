@@ -21,7 +21,7 @@ export function generateTokenizer(grammar){
             return
         end if
 
-        ${grammar.producciones.map((produccion) => produccion.accept(tokenizer)).join('\n')}
+        ${grammar.map((produccion) => produccion.accept(tokenizer)).join('\n')}
 
         print *, "error lexico en col ", cursor, ', "'//input(cursor:cursor)//'"'
         lexeme = "ERROR"
