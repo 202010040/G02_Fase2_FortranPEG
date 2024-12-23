@@ -3,6 +3,7 @@
 import Visitor from "../visitor/Visitor.js";
 import {Rango} from '../visitor/CST.js';
 import { generateCaracteres } from "./utils.js";
+import { CondicionalStrSencilla } from "./utils.js";
 
 export default class Tokenizer extends Visitor {
 
@@ -20,24 +21,38 @@ export default class Tokenizer extends Visitor {
 	}
 	visitExpresion(node) {
 		console.log('Expresion: ', node)
-		return node.expr.accept(this);
+		if (node.qty !== '*'){
+			return node.expr.accept(this);
+		}
+		let condicional = CondicionalStrSencilla(node.expr);
+		return `
+		! * en literales
+		ejecuta_ciclo = .true.
+		start_cursor = cursor  
+		allocate(character(len=0) :: lexeme_accumulated)  
+		do while (ejecuta_ciclo)	
+			if ( ${condicional} ) then
+                cursor = cursor + ${node.expr.val.length}
+                lexeme_accumulated = lexeme_accumulated // "${node.expr.val}"
+            else
+                ejecuta_ciclo = .false.
+            end if
+		end do
+		if (len(lexeme_accumulated) > 0) then
+			allocate(character(len=len(lexeme_accumulated)) :: lexeme)
+			lexeme = lexeme_accumulated
+        	return
+    	end if
+	`
+		
 	}
 	
 	visitString(node) {
 		console.log('String: ', node)
-		if (node.isCase) {
-			return `
-		if (to_lower(input(cursor:cursor + ${node.val.length - 1})) == "${node.val.toLowerCase()}") then
-			allocate(character(len=${node.val.length}) :: lexeme)
-			lexeme = input(cursor:cursor + ${node.val.length - 1})
-			cursor = cursor + ${node.val.length}
-			return
-		end if
-			`;
-		}
-	
+		let condicional = CondicionalStrSencilla(node);
+
 		return `
-		if (input(cursor:cursor + ${node.val.length - 1}) == "${node.val}") then
+		if ( ${condicional} ) then
 			allocate(character(len=${node.val.length}) :: lexeme)
 			lexeme = input(cursor:cursor + ${node.val.length - 1})
 			cursor = cursor + ${node.val.length}

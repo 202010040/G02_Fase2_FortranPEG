@@ -13,7 +13,9 @@ export function generateTokenizer(grammar){
         integer, intent(inout) :: cursor
         character(len=:), allocatable :: lexeme
         integer :: i
-        logical :: ejecuta_cliclo
+        logical :: ejecuta_ciclo
+        integer :: start_cursor
+        character(len=:), allocatable :: lexeme_accumulated
 
         if (cursor > len(input)) then
             allocate( character(len=3) :: lexeme )
@@ -56,4 +58,11 @@ export function generateCaracteres(chars) {
         return
     end if
     `;
+}
+
+export function CondicionalStrSencilla(node){
+    let condicional = node.isCase 
+    ? `cursor <= len(input) - ${node.val.length - 1} .and. to_lower(input(cursor:cursor + ${node.val.length - 1})) == "${node.val.toLowerCase()}"`
+    : `cursor <= len(input) - ${node.val.length - 1} .and. input(cursor:cursor + ${node.val.length - 1}) == "${node.val}"`
+    return condicional;
 }
