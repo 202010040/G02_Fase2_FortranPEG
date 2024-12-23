@@ -7,7 +7,7 @@ export function generateTokenizer(grammar){
     gramatica = grammar;
     const tokenizer = new Tokenizer()
     return `
-module tokenizer
+module parser
 implicit none
 
 contains
@@ -46,7 +46,7 @@ function to_lower(str) result(lower_str)
         end if
     end do
 end function to_lower
-end module tokenizer 
+end module parser 
 
     `
 }
