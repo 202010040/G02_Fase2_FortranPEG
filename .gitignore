@@ -124,3 +124,10 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+docs/node_modules/
+docs/package-lock.json
+docs/package.json
+fases/fase2/node_modules/
+fases/fase2/package-lock.json
+fases/fase2/package.json
